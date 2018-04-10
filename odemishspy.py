@@ -6,7 +6,7 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
 
-def odemis_to_hyperspy(filename='cltest.h5',specbin=1) :
+def odemis_to_hyperspy(filename='sampledata/cltest.h5',specbin=1) :
     """
     odemis_to_hyperspy(filename='cltest.h5',specbin=1)
     open h5 files from Delmic Odemis and convert them to a hyperspy object
@@ -34,10 +34,17 @@ def odemis_to_hyperspy(filename='cltest.h5',specbin=1) :
     xx=x[:,0,0,:,:].transpose((2,1,0))
 
     if cltype == 'spectrum' :
-        #make a linear fit to the wavelength axis
+        #interpolate data to linearize the wavelength scale
         w  = f[shome + 'DimensionScaleC'].value *1e9
-        wx = np.arange(w.size)
-        wslope,woffset=np.polyfit(wx,w,1)
+        wx = np.linspace(w.min(),w.max(),w.size)
+        for i in np.arange(xx.shape[0]) :
+            for k in np.arange(xx.shape[1]) :
+                xx[i,k,:] = np.interp(wx,w,xx[i,k,:])
+
+        wslope = wx[1]-wx[0]
+        woffset = wx.min()
+        #wx = np.arange(w.size)
+        #wslope,woffset=np.polyfit(wx,w,1)
         s = hs.signals.Signal1D(xx)
 
     elif cltype == 'panchrom' :
@@ -45,13 +52,6 @@ def odemis_to_hyperspy(filename='cltest.h5',specbin=1) :
     else :
         print('unknown type')
 
-
-    # create a hyperspy object...
-
-    # in hyperspy the spectral data is '1D' with 2 navigation axes !
-    # an image like pan CL is 2D
-    s = hs.signals.Signal2D(xx)
-    s = hs.signals.Signal1D(xx)
     print('hyperspy shape :' ,s.data.shape)
 
 
@@ -83,3 +83,7 @@ def odemis_to_hyperspy(filename='cltest.h5',specbin=1) :
         return( s )
     #end odemis_to_hyperspy
     #######################
+
+
+
+#odemis_to_hyperspy()
