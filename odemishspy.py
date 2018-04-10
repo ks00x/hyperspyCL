@@ -14,6 +14,7 @@ def odemis_to_hyperspy(filename='cltest.h5',specbin=1) :
     CL maps using the PM
     1.arg: filename
     2.arg: binning for hyperspectral maps
+
     """
 
     f=h5.File(filename,'r')
@@ -55,6 +56,8 @@ def odemis_to_hyperspy(filename='cltest.h5',specbin=1) :
 
 
     s.metadata.General.title = 'Odemis: ' + cdesc
+    s.metadata.General.original_filename = filename
+    s.metadata.General.notes = cltype
     s.axes_manager[0].name = 'pos x'
     s.axes_manager[0].scale = f[shome + 'DimensionScaleX'].value * 1e6
     s.axes_manager[0].offset = f[shome + 'XOffset'].value * 1e6
